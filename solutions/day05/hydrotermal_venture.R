@@ -51,9 +51,7 @@ vents %>%
   coord_fixed()
 
 vents %>% 
-  # it's all single rows, but this group_by() is a 'hack' to get a non-vectorised function
-  # - seq() - to work as a vectorized one
-  group_by(rowid) %>% 
+  rowwise() %>% 
   mutate(x = paste0(seq(x1, x2), collapse = ","),
          y = paste0(seq(y1, y2), collapse = ",")) %>% 
   ungroup() %>% 
