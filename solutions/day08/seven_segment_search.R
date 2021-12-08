@@ -92,7 +92,7 @@ match_set = function(df){
     filter(signal_n == 6) %>% 
     mutate(dist = stringdist::stringdist(signal_ordered, known_vec[3])) %>% 
     arrange(dist) %>% 
-    mutate(value = c(9, 0)) %>% # using 10 as 0 is not a valid index
+    mutate(value = c(9, 10)) %>% # using 10 as 0 is not a valid index
     select(signal, signal_ordered, value)
   
   known = bind_rows(known, found)
