@@ -1,15 +1,14 @@
 library(tidyverse)
 
-displays_orig = read_delim("solutions/day08/input_test1", delim = " | ", col_names = c("signal", "output"))
+displays_orig = read_delim("solutions/day08/input", delim = " | ", col_names = c("signal", "output"))
 
-# Part I
+# Part I ----
 displays_orig %>% 
   separate_rows(output, sep = " ") %>% 
   mutate(output_n = str_count(output)) %>% 
   count(output_n %in% c(2, 3, 4, 7))
 
-# Part II
-library(stringdist)
+# Part II ----
 signal_lengths = tribble(
   ~signal_n, ~value,
   2,   1,
@@ -18,9 +17,10 @@ signal_lengths = tribble(
   7,   8
 )
 
+
 displays = displays_orig %>% 
   rowid_to_column() %>% 
-  filter(rowid == 1) %>% 
+  #filter(rowid == 1) %>% 
   select(-output) %>% 
   separate_rows(signal, sep = " ") %>% 
   mutate(signal_n = str_count(signal)) %>% 
@@ -29,67 +29,136 @@ displays = displays_orig %>%
            map(str_sort) %>% 
            map_chr(paste0, collapse = ""))
 
-known = displays %>% 
-  left_join(
-    tribble(
-      ~signal_n, ~value,
-      2,   1,
-      3,   7,
-      4,   4,
-      7,   8
-    )) %>% 
-  drop_na() %>% 
-  select(signal, signal_ordered, value)
-
-known_vec = rep(NA, 10)
-known_vec[known$value] = known$signal_ordered
 
 
-# find 3 based on 1
-# find 9 based on 3
-# find 5 based on 9
-# 5 and 0 similar to 9, using 10 for 0
-
-most_similar = tribble(
-  ~first, ~second,
-  1,   3,
-  3,   9,
-  9, c(5, 10) # 10 means 0
-  
-)
-
+# function ----
 match_set = function(df){
-  for (i in 1:3){
-    #i = 3
-    template = most_similar$first[i]
-    match    = unlist(most_similar$second[i])
-    print(template)
-    print(match)
     
-    found = displays %>% 
-      left_join(known) %>% 
-      filter(is.na(value)) %>% 
-      mutate(signal_split = signal %>% 
-               str_split("") %>% 
-               map(str_sort) %>% 
-               map_chr(paste0, collapse = "")) %>% 
-      mutate(dist = stringdist(signal_split, known_vec[template])) %>% 
-      arrange(dist) %>% 
-      slice_min(dist) %>% 
-      arrange(signal_n) %>% 
-      mutate(value = match) %>%
-      select(signal, signal_ordered, value)
     
-    known = bind_rows(known, found)
-    known_vec = rep(NA, 10)
-    known_vec[known$value] = known$signal_ordered
-  }
+  # setup ----
+  # browser()
+  # df = displays %>% filter(rowid == 6) 
   
-  # then just 2 and 6 left, identify them based on n characters in signal
-  lookup = displays %>% 
+  #print("here 1")
+  
+  known = df %>% 
+    left_join(signal_lengths) %>% 
+    drop_na() %>% 
+    select(signal, signal_ordered, value)
+  
+  #print("here 2")
+  known_vec = rep(NA, 10)
+  known_vec[known$value] = known$signal_ordered
+  
+  
+  # identify 3 by comparing to 1 ----
+  found = df %>% 
     left_join(known) %>% 
-    mutate(value = case_when(!is.na(value) ~ value,
-                             signal_n == 5 ~ 2,
-                             signal_n == 6 ~ 6,
-                             TRUE ~ 999))
-}
+    filter(is.na(value)) %>% 
+    mutate(dist = stringdist::stringdist(signal_ordered, known_vec[1])) %>% 
+    arrange(dist) %>% 
+    slice_min(dist) %>% 
+    arrange(signal_n) %>% 
+    mutate(value = 3) %>%
+    select(signal, signal_ordered, value)
+  
+  #print("here 3")
+  known = bind_rows(known, found)
+  known_vec = rep(NA, 10)
+  known_vec[known$value] = known$signal_ordered
+  
+  # 0, 6 and 9 have signal_n = 6
+  # comparing to 5 doesn't work
+  # 6 is most different to 1
+  found = df %>% 
+    left_join(known) %>% 
+    filter(is.na(value)) %>% 
+    filter(signal_n == 6) %>% 
+    mutate(dist = stringdist::stringdist(signal_ordered, known_vec[1])) %>% 
+    arrange(dist) %>% 
+    slice_max(dist) %>% 
+    arrange(signal_n) %>% 
+    mutate(value = 6) %>%
+    select(signal, signal_ordered, value)
+  
+  known = bind_rows(known, found)
+  known_vec = rep(NA, 10)
+  known_vec[known$value] = known$signal_ordered
+  
+  # signal_n = 6: 0 and 9 left. comparing to 3, 9 more similar to 3 than 6
+  found = df %>% 
+    left_join(known) %>% 
+    filter(is.na(value)) %>% 
+    filter(signal_n == 6) %>% 
+    mutate(dist = stringdist::stringdist(signal_ordered, known_vec[3])) %>% 
+    arrange(dist) %>% 
+    mutate(value = c(9, 0)) %>% # using 10 as 0 is not a valid index
+    select(signal, signal_ordered, value)
+  
+  known = bind_rows(known, found)
+  known_vec = rep(NA, 10)
+  known_vec[known$value] = known$signal_ordered
+  
+  # 2 and 5 left, 5 more similar to 6 than 2
+  
+  df %>% 
+    left_join(known) %>% 
+    filter(is.na(value)) %>% 
+    mutate(dist = stringdist::stringdist(signal_ordered, known_vec[6])) %>% 
+    arrange(dist)
+  
+  found = df %>% 
+    left_join(known) %>% 
+    filter(is.na(value)) %>% 
+    filter(signal_n == 5) %>% 
+    mutate(dist = stringdist::stringdist(signal_ordered, known_vec[6])) %>% 
+    arrange(dist) %>% 
+    arrange(signal_n) %>% 
+    mutate(value = c(5, 2)) %>%
+    select(signal, signal_ordered, value)
+  
+  known = bind_rows(known, found)
+  known_vec = rep(NA, 10)
+  known_vec[known$value] = known$signal_ordered
+  
+  
+  lookup = df %>% 
+    left_join(known) %>% 
+    mutate(value = if_else(value == 10, 0, value)) %>% 
+    select(-rowid)
+  
+  return(lookup)
+} %>% 
+  suppressMessages()
+
+# displays %>% 
+#   filter(rowid ==10) %>%  
+#   match_set()
+
+outputs = displays_orig %>%
+  select(signal = output) %>%
+  rowid_to_column() %>%
+  separate_rows(signal, sep = " ") %>%
+  mutate(signal_ordered = signal %>%
+           str_split("") %>%
+           map(str_sort) %>%
+           map_chr(paste0, collapse = ""))
+
+lookups = displays %>%
+  mutate(dummy_rowid = rowid) %>% 
+  group_by(dummy_rowid) %>%
+  nest() %>%
+  mutate(lookup = map(data, match_set)) %>%
+  select(rowid = dummy_rowid, lookup) %>%
+  unnest(lookup) %>%
+  select(rowid, signal_ordered, value)
+
+
+outputs %>%
+  left_join(lookups) %>%
+  group_by(rowid) %>%
+  summarise(output_value = paste0(value, collapse = "")) %>% 
+  summarise(sum(as.numeric(output_value)))
+
+
+
