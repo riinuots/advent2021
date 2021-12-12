@@ -1,7 +1,7 @@
 library(tidyverse)
 library(igraph)
 
-input_orig = read_delim("solutions/day12/input", delim = "-", col_names = c("from", "to"))
+input_orig = read_delim("solutions/day12/input_test1", delim = "-", col_names = c("from", "to"))
 
 bigs = input_orig %>% 
   filter(to == toupper(to) |
@@ -23,6 +23,7 @@ bigs_repped = bind_rows(replicate(4, bigs, simplify = FALSE)) %>%
 caves = input_orig %>% 
   bind_rows(bigs_repped) %>% 
   graph_from_data_frame(directed = FALSE)
+plot(caves)
 
 # find all paths
 all_paths = tibble(path = caves %>% 
@@ -44,3 +45,7 @@ caves0 = input_orig %>%
 caves0 %>% plot()
 
 caves %>% plot()
+
+png("solutions/day12/cave_graph.png", units = "in", width = 1.4*4, height = 1.4*4, res = 300)
+plot(caves, vertex.color = "white")
+dev.off()
