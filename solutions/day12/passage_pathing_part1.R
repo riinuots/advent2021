@@ -1,6 +1,5 @@
 library(tidyverse)
 library(igraph)
-library(tidygraph)
 
 input_orig = read_delim("solutions/day12/input", delim = "-", col_names = c("from", "to"))
 
