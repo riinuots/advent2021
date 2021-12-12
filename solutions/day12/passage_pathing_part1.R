@@ -6,10 +6,10 @@ input_orig = read_delim("solutions/day12/input", delim = "-", col_names = c("fro
 bigs = input_orig %>% 
   filter(to == toupper(to) |
            from == toupper(from)) %>% 
-  nest(everything())
+  nest(data = everything())
 
 # I am replicating the big points with slightly different names
-# this way the simple paths function will 'visit' them more than onnce
+# this way the simple paths function will 'visit' them more than once
 bigs_repped = bind_rows(replicate(4, bigs, simplify = FALSE)) %>% 
   rowid_to_column("rep_id") %>% 
   unnest(data) %>% 
