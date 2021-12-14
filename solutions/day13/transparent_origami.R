@@ -32,12 +32,3 @@ df %>%
   geom_tile() +
   coord_fixed() +
   scale_y_reverse()
-
-
-
-
-
-
-
-
-
