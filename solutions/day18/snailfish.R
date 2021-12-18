@@ -3,8 +3,6 @@ library(lazyeval)
 
 # Explode ----
 explode = function(lst){
-  #lst = num_list
-  #browser()
   num_df = reshape2::melt(lst) %>% 
     rowid_to_column()
   e = drop_na(num_df) %>% slice(1:2)
@@ -24,8 +22,8 @@ explode = function(lst){
   if (! is_empty(nb2_loc)){
     lst[[nb2_loc]] = lst[[nb2_loc]] + unlist(lst[[e2_loc]])
   }
-  #unlist(lst)
-  # head(x, -1) removes last element
+
+    # head(x, -1) removes last element
   lst[[head(e1_loc, -1)]] = 0
   return(lst)
 }
@@ -49,31 +47,8 @@ split = function(lst){
   return(lst)
 }
 
-# testing ----
-# num_chr = "[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]"
-# num_list = num_chr %>% 
-#   str_replace_all("\\[", "list\\(") %>% 
-#   str_replace_all("\\]", "\\)") %>% 
-#   lazy_eval()
-# 
-# unlist(num_list)
-
-# num_list = explode(num_list)
-# unlist(num_list)
-# num_list = explode(num_list)
-# unlist(num_list)
-# num_list = split(num_list)
-# unlist(num_list)
-# num_list = split(num_list)
-# unlist(num_list)
-# num_list = explode(num_list)
-# unlist(num_list)
-
 # Add ----
 add = function(lst, new){
-  #lst = num_list
-  # new = "[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]"
-  #new = "[1,1]"
   new_list = new %>% 
     str_replace_all("\\[", "list\\(") %>% 
     str_replace_all("\\]", "\\)") %>% 
@@ -99,15 +74,6 @@ add = function(lst, new){
   }
   return(lst)
 }
-
-# more testing -----
-
-# num_list = "[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]" %>% 
-#   str_replace_all("\\[", "list\\(") %>% 
-#   str_replace_all("\\]", "\\)") %>% 
-#   lazy_eval()
-# 
-# num_list %>% unlist()
 
 num_list = read_lines("solutions/day18/input", n_max = 1) %>% 
     str_replace_all("\\[", "list\\(") %>%
