@@ -22,8 +22,8 @@ explode = function(lst){
   if (! is_empty(nb2_loc)){
     lst[[nb2_loc]] = lst[[nb2_loc]] + unlist(lst[[e2_loc]])
   }
-
-    # head(x, -1) removes last element
+  
+  # head(x, -1) removes last element
   lst[[head(e1_loc, -1)]] = 0
   return(lst)
 }
@@ -49,10 +49,15 @@ split = function(lst){
 
 # Add ----
 add = function(lst, new){
-  new_list = new %>% 
-    str_replace_all("\\[", "list\\(") %>% 
-    str_replace_all("\\]", "\\)") %>% 
-    lazy_eval()
+  
+  if (is.character(new)){
+    new_list = new %>% 
+      str_replace_all("\\[", "list\\(") %>% 
+      str_replace_all("\\]", "\\)") %>% 
+      lazy_eval()
+  } else{
+    new_list = new
+  }
   
   lst = list(lst, new_list)
   print(unlist(lst))
@@ -76,11 +81,12 @@ add = function(lst, new){
 }
 
 num_list = read_lines("solutions/day18/input", n_max = 1) %>% 
-    str_replace_all("\\[", "list\\(") %>%
-    str_replace_all("\\]", "\\)") %>%
-    lazy_eval()
+  str_replace_all("\\[", "list\\(") %>%
+  str_replace_all("\\]", "\\)") %>%
+  lazy_eval()
 num_list %>% unlist()
 
+# Part I
 added = num_list
 for (i in 1:99){
   new = read_lines("solutions/day18/input", n_max = 1, skip = i)
@@ -89,5 +95,37 @@ for (i in 1:99){
   added = add(added, new)
   #added %>% unlist()
 }
-added %>% unlist()
-save(added, file = "solutions/day18/added.rda")
+x = added %>% unlist()
+#save(added, file = "solutions/day18/added.rda")
+
+magnitude = function(lst){
+  if (length(lst) == 1){
+    return(lst)
+  }
+  return(3*magnitude(lst[[1]]) + 2*magnitude(lst[[2]]))
+}
+
+magnitude(added)
+
+# Part II
+
+make_list = function(chr){
+  chr %>% 
+    str_replace_all("\\[", "list\\(") %>%
+    str_replace_all("\\]", "\\)") %>%
+    lazy_eval()
+}
+
+nums = read_lines("solutions/day18/input")
+check_sums = crossing(x = nums, y = nums) %>% 
+  rowwise() %>% 
+  mutate(x = list(make_list(x)), y = list(make_list(y)))
+
+sums = check_sums %>% 
+  mutate(added = list(add(x, y)))
+#save(sums, file = "solutions/day18/crossed_sums.rda")
+
+sums %>% 
+  mutate(mag = magnitude(added)) %>% 
+  ungroup() %>% 
+  slice_max(mag)
