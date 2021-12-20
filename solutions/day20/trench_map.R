@@ -1,6 +1,6 @@
 library(tidyverse)
 
-filename = "solutions/day20/input"
+filename = "solutions/day20/input_test"
 
 algo_orig = read_lines(filename, n_max = 1) %>% 
   str_split("") %>% 
@@ -68,9 +68,20 @@ for (i in 1:50){
 }
 
 image %>% 
+  count(value == 1)
+
+
+
+
+
+
+
+# plotting
+
+input_orig %>% 
+  enhance(fill = "0") %>% 
+  enhance(fill = "0") %>% 
   filter(value == 1) %>% 
   ggplot(aes(x, y)) +
-  geom_point()
-
-image %>% 
-  count(value == 1)
+  geom_point(shape = "#", size = 5)
+ggsave("solutions/day20/image.png", width = 5, height = 5)
