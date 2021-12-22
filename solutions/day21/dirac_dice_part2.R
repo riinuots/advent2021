@@ -10,30 +10,36 @@ p[3] # player 1 score
 p[4] # player 2 score
 
 wins = c(0, 0)
+p = c(4, 8, 0, 0)
 
 game = function(p, turn){
-  # print("--NEW ROUND--")
-  # print("player turn:")
-  # print(turn)
-  # 
-  # print("player position:")
-  # print(p[turn])
-  # 
-  # print("player score:")
-  # print(p[turn + 2])
+  print("--NEW ROUND--")
+  print("player turn:")
+  print(turn)
+
+  print("player position:")
+  print(p[turn])
+
+  print("player score:")
+  print(p[turn + 2])
 
   if (p[turn + 2] > 20){
     #print("-----WINNER----")
-    wins[turn] <<- wins[turn] + 1
+    #wins[turn] <<- wins[turn] + 1
     p = c(4, 8, 0, 0)
     turn = 1
-    return()
+    if (turn ==1){
+      return(c(1, 0))
+    } else{
+      return(c(0,1))
+    }
   }
   
   for (dice in dice_sums){
     move = p[turn] + dice
     # print("move:")
     # print(move)
+    p_keep = p
     p[turn] = if_else(move %% 10 == 0, 10, move %% 10) # position
     p[turn + 2] = p[turn + 2] + p[turn] # score
     
@@ -43,9 +49,14 @@ game = function(p, turn){
       turn = 1
     }
 
-    game(p, turn)
+    wins = wins + game(p, turn)
+    p = p_keep
   }
+  return(wins)
 
 }
 
+system.time(game(p, 1))
 game(p, 1)
+
+    
